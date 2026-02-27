@@ -747,7 +747,7 @@ export default function InvoiceBuilder({
                       onContextMenu={(e) => handleCellContextMenu(e, cell.id)}
                     >
                       {cell.type === "text" ? (
-                        <div style={{ position: "relative" }}>
+                        <div style={{ position: "relative", width: "100%", height: "100%" }}>
                           {focusedCellId === cell.id && (
                             <FormattingToolbar
                               onFormat={handleFormat}
@@ -765,6 +765,11 @@ export default function InvoiceBuilder({
                               updateCell(cell.id, {
                                 content: e.currentTarget.innerHTML || "",
                               });
+                            }}
+                            style={{
+                              textAlign: cell.textAlign as any,
+                              width: "100%",
+                              height: "100%"
                             }}
                             dangerouslySetInnerHTML={{ __html: cell.content || "" }}
                           />

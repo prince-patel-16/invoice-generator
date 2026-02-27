@@ -95,6 +95,34 @@ function ImagePropertiesSection({
     });
   };
 
+  const handleDeleteAsset = async (assetId: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    
+    if (!confirm("Are you sure you want to delete this image? It will be hidden but existing invoices using it will still display it.")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/image-assets/${assetId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ deleted: true }),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        // Reload asset list
+        await loadAssets();
+      } else {
+        console.error("Delete failed:", result.error);
+        alert("Failed to delete image");
+      }
+    } catch (error) {
+      console.error("Error deleting:", error);
+      alert("Error deleting image");
+    }
+  };
+
   return (
     <div className="bg-gray-50 p-4 rounded">
       <h3 className="font-semibold text-sm mb-3">Image Properties</h3>
@@ -130,24 +158,36 @@ function ImagePropertiesSection({
         ) : (
           <div className="grid grid-cols-4 gap-2">
             {assets.map((asset) => (
-              <button
+              <div
                 key={asset._id}
-                type="button"
-                onClick={() => handleSelectExisting(asset)}
-                className={`border rounded overflow-hidden transition-all ${
-                  cell.imageUrl === asset.url
-                    ? "ring-2 ring-blue-600 border-blue-600"
-                    : "border-gray-300 hover:ring-2 hover:ring-blue-400"
-                }`}
-                title={asset._id}
+                className="relative group"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={asset.url}
-                  alt="Asset thumbnail"
-                  className="w-full h-16 object-cover"
-                />
-              </button>
+                <button
+                  type="button"
+                  onClick={() => handleSelectExisting(asset)}
+                  className={`border rounded overflow-hidden transition-all w-full ${
+                    cell.imageUrl === asset.url
+                      ? "ring-2 ring-blue-600 border-blue-600"
+                      : "border-gray-300 hover:ring-2 hover:ring-blue-400"
+                  }`}
+                  title={asset._id}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={asset.url}
+                    alt="Asset thumbnail"
+                    className="w-full h-16 object-cover"
+                  />
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => handleDeleteAsset(asset._id, e)}
+                  className="absolute top-0 right-0 bg-red-600 text-white text-xs px-1.5 py-0.5 rounded-bl opacity-0 group-hover:opacity-100 transition-opacity"
+                  title="Delete image"
+                >
+                  ✕
+                </button>
+              </div>
             ))}
           </div>
         )}

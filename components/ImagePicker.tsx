@@ -81,6 +81,38 @@ export default function ImagePicker({
     }
   };
 
+  const handleDeleteAsset = async (assetId: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    
+    if (!confirm("Are you sure you want to delete this image? It will be hidden but existing invoices using it will still display it.")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/image-assets/${assetId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ deleted: true }),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        // Reload asset list
+        const listResponse = await fetch("/api/image-assets");
+        const listResult = await listResponse.json();
+        if (listResult.success) {
+          setAssets(listResult.data || []);
+        }
+      } else {
+        console.error("Delete failed:", result.error);
+        alert("Failed to delete image");
+      }
+    } catch (error) {
+      console.error("Error deleting:", error);
+      alert("Error deleting image");
+    }
+  };
+
   return (
     <div>
       <label className="text-xs text-gray-700 block mb-2">{label}</label>
@@ -104,22 +136,34 @@ export default function ImagePicker({
           <p className="text-xs text-gray-600 mb-2">Or pick existing</p>
           <div className="grid grid-cols-4 gap-2">
             {assets.map((asset) => (
-              <button
+              <div
                 key={asset._id}
-                type="button"
-                onClick={() => onChange(asset.url)}
-                className={`border rounded overflow-hidden hover:ring-2 hover:ring-blue-500 ${
-                  value === asset.url ? "ring-2 ring-blue-600" : ""
-                }`}
-                title={asset._id}
+                className="relative group"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={asset.url}
-                  alt="Asset"
-                  className="w-full h-16 object-cover"
-                />
-              </button>
+                <button
+                  type="button"
+                  onClick={() => onChange(asset.url)}
+                  className={`border rounded overflow-hidden hover:ring-2 hover:ring-blue-500 w-full ${
+                    value === asset.url ? "ring-2 ring-blue-600" : ""
+                  }`}
+                  title={asset._id}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={asset.url}
+                    alt="Asset"
+                    className="w-full h-16 object-cover"
+                  />
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => handleDeleteAsset(asset._id, e)}
+                  className="absolute top-0 right-0 bg-red-600 text-white text-xs px-1.5 py-0.5 rounded-bl opacity-0 group-hover:opacity-100 transition-opacity"
+                  title="Delete image"
+                >
+                  ✕
+                </button>
+              </div>
             ))}
           </div>
         </div>

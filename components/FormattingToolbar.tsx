@@ -47,7 +47,7 @@ export default function FormattingToolbar({
   };
 
   return (
-    <div className="absolute -top-12 left-0 bg-white border border-gray-300 rounded shadow-lg flex items-center gap-1 p-1 z-50">
+    <div className="absolute -top-12 left-0 bg-white border border-gray-300 rounded shadow-lg flex items-center gap-1 p-1 hidden">
       <button
         type="button"
         onMouseDown={(e) => {

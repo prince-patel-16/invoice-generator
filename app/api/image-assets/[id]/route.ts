@@ -20,7 +20,7 @@ export async function GET(
     await connectDB();
     const { id } = await params;
     const asset = await ImageAsset.findById(id);
-    if (!asset) {
+    if (!asset || asset.deleted) {
       return new NextResponse("Not Found", { status: 404 });
     }
 
@@ -39,5 +39,42 @@ export async function GET(
     });
   } catch (error: any) {
     return new NextResponse(error.message, { status: 500 });
+  }
+}
+
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    await connectDB();
+    const { id } = await params;
+    const { deleted } = await req.json();
+
+    const asset = await ImageAsset.findByIdAndUpdate(
+      id,
+      { deleted },
+      { new: true }
+    );
+
+    if (!asset) {
+      return NextResponse.json(
+        { success: false, error: "Asset not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        _id: asset._id,
+        deleted: asset.deleted,
+      },
+    });
+  } catch (error: any) {
+    return NextResponse.json(
+      { success: false, error: error.message },
+      { status: 500 }
+    );
   }
 }

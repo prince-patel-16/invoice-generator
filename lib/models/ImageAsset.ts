@@ -20,6 +20,11 @@ const imageAssetSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    deleted: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
   },
   {
     timestamps: true,

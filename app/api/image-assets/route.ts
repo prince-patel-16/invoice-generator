@@ -45,8 +45,8 @@ export async function POST(req: NextRequest) {
 export async function GET(_req: NextRequest) {
   try {
     await connectDB();
-    // Get all assets (metadata only)
-    const assets = await ImageAsset.find()
+    // Get all non-deleted assets (metadata only)
+    const assets = await ImageAsset.find({ deleted: { $ne: true } })
       .sort({ createdAt: -1 });
 
     const data = assets.map((asset) => ({
